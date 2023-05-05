@@ -8,9 +8,9 @@ type Event {
   description: String
   start_time: DateTime!
   end_time: DateTime!
-  location: String!
-  created_at: DateTime!
-  updated_at: DateTime!
+  location: String
+  created_at: DateTime
+  updated_at: DateTime
 }
 
 """
@@ -19,5 +19,19 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 scalar DateTime
 
 type Query {
-  events: [Event!]!
+  getEvents: [Event!]!
+  getEvent: Event!
+}
+
+type Mutation {
+  createEvent(createEventInput: CreateEventInput!): Event!
+  deleteEvent(event_id: String!): Event!
+}
+
+input CreateEventInput {
+  title: String!
+  description: String!
+  start_time: DateTime!
+  end_time: DateTime!
+  location: String!
 }

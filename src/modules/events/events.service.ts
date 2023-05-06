@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Event } from './event.entity';
 import { PrismaService } from 'src/shared/prisma/prisma.service';
 import { CreateEventInput } from 'src/common/dto/events/create-event.input';
+import { UpdateEventInput } from 'src/common/dto/events/update-event.input';
 
 @Injectable()
 export class EventsService {
@@ -9,6 +10,7 @@ export class EventsService {
 
   async findAll(): Promise<Event[]> {
     const events = await this.prisma.events.findMany();
+
     return events;
   }
 
@@ -22,7 +24,7 @@ export class EventsService {
     return eventCreated;
   }
 
-  async update(event_id: string, event: Event): Promise<Event> {
+  async update(event_id: string, event: UpdateEventInput): Promise<Event> {
     const eventUpdated = await this.prisma.events.update({
       where: { event_id },
       data: { ...event },

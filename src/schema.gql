@@ -24,8 +24,17 @@ type Query {
 }
 
 type Mutation {
+  updateEvent(event_id: String!, event: UpdateEventInput!): Event!
   createEvent(createEventInput: CreateEventInput!): Event!
   deleteEvent(event_id: String!): Event!
+}
+
+input UpdateEventInput {
+  title: String
+  description: String
+  start_time: DateTime
+  end_time: DateTime
+  location: String
 }
 
 input CreateEventInput {

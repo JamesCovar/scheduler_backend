@@ -2,6 +2,7 @@ import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { EventsService } from './events.service';
 import { Event } from './event.entity';
 import { CreateEventInput } from 'src/common/dto/events/create-event.input';
+import { UpdateEventInput } from 'src/common/dto/events/update-event.input';
 
 @Resolver((of) => Event)
 export class EventsResolver {
@@ -15,6 +16,14 @@ export class EventsResolver {
   @Query((returns) => Event)
   getEvent(event_id: string): Promise<Event> {
     return this.eventsService.findOne(event_id);
+  }
+
+  @Mutation((returns) => Event)
+  updateEvent(
+    @Args('event_id') event_id: string,
+    @Args('event') event: UpdateEventInput,
+  ): Promise<Event> {
+    return this.eventsService.update(event_id, event);
   }
 
   @Mutation((returns) => Event)

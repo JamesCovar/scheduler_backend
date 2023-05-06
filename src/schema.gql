@@ -39,8 +39,8 @@ input UpdateEventInput {
 
 input CreateEventInput {
   title: String!
-  description: String!
+  description: String
   start_time: DateTime!
   end_time: DateTime!
-  location: String!
+  location: String
 }

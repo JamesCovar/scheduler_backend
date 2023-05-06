@@ -3,22 +3,27 @@ import { EventsService } from './events.service';
 import { Event } from './event.entity';
 import { CreateEventInput } from 'src/common/dto/events/create-event.input';
 import { UpdateEventInput } from 'src/common/dto/events/update-event.input';
+import { Pagination } from 'src/common/dto/pagination/pagination.dto';
+import { FilterEventsInput } from 'src/common/dto/events/filter-events.input';
 
 @Resolver((of) => Event)
 export class EventsResolver {
   constructor(private eventsService: EventsService) {}
 
-  @Query((returns) => [Event])
-  getEvents(): Promise<Event[]> {
-    return this.eventsService.findAll();
+  @Query(() => [Event])
+  getEvents(
+    @Args('pagination') pagination: Pagination,
+    @Args('filter', { nullable: true }) filter?: FilterEventsInput,
+  ): Promise<Event[]> {
+    return this.eventsService.findAll(pagination, filter);
   }
 
-  @Query((returns) => Event)
+  @Query(() => Event)
   getEvent(event_id: string): Promise<Event> {
     return this.eventsService.findOne(event_id);
   }
 
-  @Mutation((returns) => Event)
+  @Mutation(() => Event)
   updateEvent(
     @Args('event_id') event_id: string,
     @Args('event') event: UpdateEventInput,
@@ -26,14 +31,14 @@ export class EventsResolver {
     return this.eventsService.update(event_id, event);
   }
 
-  @Mutation((returns) => Event)
+  @Mutation(() => Event)
   createEvent(
     @Args('createEventInput') createEventInput: CreateEventInput,
   ): Promise<Event> {
     return this.eventsService.create(createEventInput);
   }
 
-  @Mutation((returns) => Event)
+  @Mutation(() => Event)
   deleteEvent(@Args('event_id') event_id: string): Promise<Event> {
     return this.eventsService.delete(event_id);
   }

@@ -19,8 +19,21 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 scalar DateTime
 
 type Query {
-  getEvents: [Event!]!
+  getEvents(pagination: Pagination!, filter: FilterEventsInput): [Event!]!
   getEvent: Event!
+}
+
+input Pagination {
+  first: Float
+  offset: Float
+}
+
+input FilterEventsInput {
+  title: String
+  description: String
+  start_time: DateTime
+  end_time: DateTime
+  location: String
 }
 
 type Mutation {

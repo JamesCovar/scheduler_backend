@@ -1,25 +1,30 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsAlpha, IsDate, IsString } from 'class-validator';
+import { IsAlpha, IsDate, IsOptional, IsString } from 'class-validator';
 
 @InputType()
 export class UpdateEventInput {
   @IsAlpha()
+  @IsOptional()
   @Field({ nullable: true })
-  title: string;
+  title?: string;
 
   @IsString()
+  @IsOptional()
   @Field({ nullable: true })
-  description: string;
+  description?: string;
 
   @IsDate()
+  @IsOptional()
   @Field({ nullable: true })
-  start_time: Date;
+  start_time?: Date;
 
   @IsDate()
+  @IsOptional()
   @Field({ nullable: true })
-  end_time: Date;
+  end_time?: Date;
 
   @IsString()
+  @IsOptional()
   @Field({ nullable: true })
-  location: string;
+  location?: string;
 }

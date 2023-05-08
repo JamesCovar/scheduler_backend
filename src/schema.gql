@@ -9,6 +9,7 @@ type Event {
   start_time: DateTime!
   end_time: DateTime!
   location: String
+  userId: String!
   created_at: DateTime
   updated_at: DateTime
 }
@@ -18,9 +19,36 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+type UpdatedEventObject {
+  success: Boolean!
+  rowsAffected: Float!
+  message: String!
+  code: Float!
+  dataUpdated: String
+}
+
+type DeletedEventObject {
+  success: Boolean!
+  rowsAffected: Float!
+  message: String!
+  code: Float!
+  dataDeleted: String
+}
+
+type User {
+  user_id: String!
+  name: String!
+  email: String!
+  password: String!
+}
+
+type BearerTokenInput {
+  token: String
+}
+
 type Query {
   getEvents(pagination: Pagination!, filter: FilterEventsInput): [Event!]!
-  getEvent: Event!
+  getEvent(eventId: String!): Event!
 }
 
 input Pagination {
@@ -37,9 +65,22 @@ input FilterEventsInput {
 }
 
 type Mutation {
-  updateEvent(event_id: String!, event: UpdateEventInput!): Event!
+  signIn(authCredentials: AuthCredentials!): BearerTokenInput!
+  signUp(signUpUserInput: SignUpUserInput!): User!
+  updateEvent(event_id: String!, event: UpdateEventInput!): UpdatedEventObject!
   createEvent(createEventInput: CreateEventInput!): Event!
-  deleteEvent(event_id: String!): Event!
+  deleteEvent(event_id: String!): DeletedEventObject!
+}
+
+input AuthCredentials {
+  email: String!
+  password: String
+}
+
+input SignUpUserInput {
+  name: String!
+  email: String!
+  password: String!
 }
 
 input UpdateEventInput {

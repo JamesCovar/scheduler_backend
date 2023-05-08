@@ -3,9 +3,18 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { GraphqlModule } from './shared/graphql/graphql.module';
 import { EventsModule } from './modules/events/events.module';
+import { UsersModule } from './modules/users/users.module';
+import { GenTokenModule } from './shared/genToken/genToken.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
-  imports: [GraphqlModule, EventsModule],
+  imports: [
+    GraphqlModule,
+    GenTokenModule,
+    AuthModule,
+    EventsModule,
+    UsersModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -11,6 +11,13 @@ datasource db {
 }
 
 //TODO: Check if is possible separate models from schema.prisma
+model Users {
+  user_id String @id @default(uuid())
+  name String
+  email String @unique
+  password String
+  events Events[]
+}
 
 model Events {
   event_id String @id @default(uuid())
@@ -21,4 +28,6 @@ model Events {
   location String?
   created_at DateTime @default(now()) 
   updated_at DateTime @default(now()) 
+  users Users @relation(fields: [userId], references: [user_id])
+  userId String
 }

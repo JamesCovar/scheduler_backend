@@ -5,12 +5,15 @@ import { CreateEventInput } from 'src/common/dto/events/create-event.input';
 import { UpdateEventInput } from 'src/common/dto/events/update-event.input';
 import { Pagination } from 'src/common/dto/pagination/pagination.dto';
 import { FilterEventsInput } from 'src/common/dto/events/filter-events.input';
+import { UpdatedEventObject } from 'src/common/dto/events/updated-event.object';
+import { DeletedEventObject } from 'src/common/dto/events/deleted-event.object';
 
 @Injectable()
 export class EventsService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(
+    userId: string,
     pagination: Pagination = { offset: 1, first: 5 },
     filter: FilterEventsInput,
   ): Promise<Event[]> {
@@ -34,6 +37,8 @@ export class EventsService {
       whereStatement.location = { contains: filter.location };
     }
 
+    whereStatement.userId = userId;
+
     const events = await this.prisma.events.findMany({
       skip: first * (offset - 1),
       take: first,
@@ -43,28 +48,72 @@ export class EventsService {
     return events;
   }
 
-  async findOne(event_id: string): Promise<Event> {
-    const event = await this.prisma.events.findUnique({ where: { event_id } });
+  async findOne(userId: string, event_id: string): Promise<Event> {
+    const event = await this.prisma.events.findFirst({
+      where: { event_id, userId },
+    });
     return event;
   }
 
-  async create(event: CreateEventInput): Promise<Event> {
-    const eventCreated = await this.prisma.events.create({ data: event });
+  async create(userId: string, event: CreateEventInput): Promise<Event> {
+    const eventPayload = { ...event, userId };
+    console.log(eventPayload);
+    const eventCreated = await this.prisma.events.create({
+      data: eventPayload,
+    });
     return eventCreated;
   }
 
-  async update(event_id: string, event: UpdateEventInput): Promise<Event> {
-    const eventUpdated = await this.prisma.events.update({
-      where: { event_id },
+  async update(
+    userId: string,
+    event_id: string,
+    event: UpdateEventInput,
+  ): Promise<UpdatedEventObject> {
+    const eventUpdated = await this.prisma.events.updateMany({
+      where: { event_id, userId },
       data: { ...event },
     });
-    return eventUpdated;
+
+    if (eventUpdated.count === 0) {
+      return {
+        code: 204,
+        success: false,
+        rowsAffected: eventUpdated.count,
+        dataUpdated: null,
+        message: 'No event found with the given event_id',
+      };
+    }
+
+    return {
+      code: 200,
+      success: true,
+      rowsAffected: eventUpdated.count,
+      dataUpdated: event_id,
+      message: 'Event updated successfully',
+    };
   }
 
-  async delete(event_id: string): Promise<Event> {
-    const eventDeleted = await this.prisma.events.delete({
-      where: { event_id },
+  async delete(userId: string, event_id: string): Promise<DeletedEventObject> {
+    const eventDeleted = await this.prisma.events.deleteMany({
+      where: { event_id, userId },
     });
-    return eventDeleted;
+
+    if (eventDeleted.count === 0) {
+      return {
+        code: 204,
+        success: false,
+        rowsAffected: eventDeleted.count,
+        dataDeleted: null,
+        message: 'No event found with the given event_id',
+      };
+    }
+
+    return {
+      code: 200,
+      success: true,
+      rowsAffected: eventDeleted.count,
+      dataDeleted: event_id,
+      message: 'Event deleted succesfully',
+    };
   }
 }

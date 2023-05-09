@@ -6,6 +6,8 @@ import { EventsModule } from './modules/events/events.module';
 import { UsersModule } from './modules/users/users.module';
 import { GenTokenModule } from './shared/genToken/genToken.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { SchedulerModule } from './modules/scheduler/scheduler.module';
+import { TimeoutReminderModule } from './shared/timeoutReminder/timeoutReminder.module';
 
 @Module({
   imports: [
@@ -14,6 +16,8 @@ import { AuthModule } from './modules/auth/auth.module';
     AuthModule,
     EventsModule,
     UsersModule,
+    SchedulerModule,
+    TimeoutReminderModule,
   ],
   controllers: [AppController],
   providers: [AppService],

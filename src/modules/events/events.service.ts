@@ -7,10 +7,14 @@ import { Pagination } from 'src/common/dto/pagination/pagination.dto';
 import { FilterEventsInput } from 'src/common/dto/events/filter-events.input';
 import { UpdatedEventObject } from 'src/common/dto/events/updated-event.object';
 import { DeletedEventObject } from 'src/common/dto/events/deleted-event.object';
+import { SchedulerService } from '../scheduler/scheduler.service';
 
 @Injectable()
 export class EventsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private schedulerService: SchedulerService,
+  ) {}
 
   async findAll(
     userId: string,
@@ -57,10 +61,11 @@ export class EventsService {
 
   async create(userId: string, event: CreateEventInput): Promise<Event> {
     const eventPayload = { ...event, userId };
-    console.log(eventPayload);
     const eventCreated = await this.prisma.events.create({
       data: eventPayload,
     });
+
+    await this.schedulerService.scheduleNextEvent();
     return eventCreated;
   }
 
@@ -84,6 +89,7 @@ export class EventsService {
       };
     }
 
+    await this.schedulerService.scheduleNextEvent();
     return {
       code: 200,
       success: true,
@@ -107,7 +113,7 @@ export class EventsService {
         message: 'No event found with the given event_id',
       };
     }
-
+    await this.schedulerService.scheduleNextEvent();
     return {
       code: 200,
       success: true,

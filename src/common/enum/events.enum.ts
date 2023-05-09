@@ -1,0 +1,4 @@
+export enum EventsEnum {
+  BEFORE_START_EVENT = 'BEFORE_START_EVENT',
+  START_EVENT = 'START_EVENT',
+}

@@ -3,7 +3,7 @@ import { IsAlpha, IsDate, IsDateString, IsString } from 'class-validator';
 
 @InputType()
 export class CreateEventInput {
-  @IsAlpha()
+  @IsString()
   @Field()
   title: string;
 

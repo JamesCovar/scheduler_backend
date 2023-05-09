@@ -3,7 +3,7 @@ import { IsAlpha, IsDate, IsOptional, IsString } from 'class-validator';
 
 @InputType()
 export class UpdateEventInput {
-  @IsAlpha()
+  @IsString()
   @IsOptional()
   @Field({ nullable: true })
   title?: string;

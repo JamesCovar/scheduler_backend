@@ -7,32 +7,33 @@ import { Pagination } from 'src/common/dto/pagination/pagination.dto';
 import { FilterEventsInput } from 'src/common/dto/events/filter-events.input';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/auth.guard';
-import { use } from 'passport';
-import { UpdatedEventObject } from 'src/common/dto/events/updated-event.object';
+import { UpdatedEventObject } from 'src/common/dto/events/responses/updated-event.object';
 import { DeletedEventObject } from 'src/common/dto/events/deleted-event.object';
+import { GetEventObject } from 'src/common/dto/events/responses/get-event.object';
+import { CreatedEventObject } from 'src/common/dto/events/responses/created-event.object';
+import { GetAllEventsObject } from 'src/common/dto/events/responses/getAll-events.object';
 
 @Resolver((of) => Event)
 export class EventsResolver {
   constructor(private eventsService: EventsService) {}
 
-  @Query(() => [Event])
+  @Query(() => GetAllEventsObject)
   @UseGuards(JwtAuthGuard)
   getEvents(
     @Context() context,
     @Args('pagination') pagination: Pagination,
     @Args('filter', { nullable: true }) filter?: FilterEventsInput,
-  ): Promise<Event[]> {
+  ): Promise<GetAllEventsObject> {
     const { userId } = context.req.user;
-    console.log(userId);
     return this.eventsService.findAll(userId, pagination, filter);
   }
 
-  @Query(() => Event)
+  @Query(() => GetEventObject)
   @UseGuards(JwtAuthGuard)
   getEvent(
     @Args('eventId') eventId: string,
     @Context() context,
-  ): Promise<Event> {
+  ): Promise<GetEventObject> {
     const { userId } = context.req.user;
     return this.eventsService.findOne(userId, eventId);
   }
@@ -48,12 +49,12 @@ export class EventsResolver {
     return this.eventsService.update(userId, event_id, event);
   }
 
-  @Mutation(() => Event)
+  @Mutation(() => CreatedEventObject)
   @UseGuards(JwtAuthGuard)
   createEvent(
     @Args('createEventInput') createEventInput: CreateEventInput,
     @Context() context,
-  ): Promise<Event> {
+  ): Promise<CreatedEventObject> {
     //TODO: Get user id from context || jwt
     const { userId } = context.req.user;
     return this.eventsService.create(userId, createEventInput);

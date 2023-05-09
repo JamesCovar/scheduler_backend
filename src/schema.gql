@@ -2,23 +2,6 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type Event {
-  event_id: String!
-  title: String!
-  description: String
-  start_time: DateTime!
-  end_time: DateTime!
-  location: String
-  userId: String!
-  created_at: DateTime
-  updated_at: DateTime
-}
-
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
-
 type UpdatedEventObject {
   success: Boolean!
   rowsAffected: Float!
@@ -35,21 +18,74 @@ type DeletedEventObject {
   dataDeleted: String
 }
 
-type User {
-  user_id: String!
-  name: String!
-  email: String!
-  password: String!
-  cellphone: String!
+type EventObject {
+  title: String
+  description: String
+  start_time: DateTime
+  end_time: DateTime
+  location: String
 }
 
-type BearerTokenInput {
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type GetEventObject {
+  success: Boolean!
+  rowsAffected: Float!
+  message: String!
+  code: Float!
+  data: EventObject
+}
+
+type CreateEventEventObject {
+  title: String!
+  description: String
+  start_time: DateTime!
+  end_time: DateTime!
+  location: String
+}
+
+type CreatedEventObject {
+  success: Boolean!
+  rowsAffected: Float!
+  message: String!
+  code: Float!
+  dataCreated: CreateEventEventObject
+}
+
+type EventObjectData {
+  event_id: String
+  title: String
+  description: String
+  start_time: DateTime
+  end_time: DateTime
+  location: String
+  created_at: DateTime
+  updated_at: DateTime
+  userId: String
+}
+
+type GetAllEventsObject {
+  success: Boolean!
+  rowsAffected: Float!
+  message: String!
+  code: Float!
+  data: [EventObjectData!]!
+}
+
+type AuthObject {
+  success: Boolean!
+  rowsAffected: Float!
+  message: String!
+  code: Float!
   token: String
 }
 
 type Query {
-  getEvents(pagination: Pagination!, filter: FilterEventsInput): [Event!]!
-  getEvent(eventId: String!): Event!
+  getEvents(pagination: Pagination!, filter: FilterEventsInput): GetAllEventsObject!
+  getEvent(eventId: String!): GetEventObject!
 }
 
 input Pagination {
@@ -66,10 +102,10 @@ input FilterEventsInput {
 }
 
 type Mutation {
-  signIn(authCredentials: AuthCredentials!): BearerTokenInput!
-  signUp(signUpUserInput: SignUpUserInput!): User!
+  signIn(authCredentials: AuthCredentials!): AuthObject!
+  signUp(signUpUserInput: SignUpUserInput!): AuthObject!
   updateEvent(event_id: String!, event: UpdateEventInput!): UpdatedEventObject!
-  createEvent(createEventInput: CreateEventInput!): Event!
+  createEvent(createEventInput: CreateEventInput!): CreatedEventObject!
   deleteEvent(event_id: String!): DeletedEventObject!
 }
 

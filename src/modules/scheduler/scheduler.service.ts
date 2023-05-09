@@ -4,6 +4,7 @@ import { DateConvertService } from 'src/shared/dateConvert/dateConvert.service';
 import { PrismaService } from 'src/shared/prisma/prisma.service';
 import { SmsSenderService } from 'src/shared/smsSender/smsSender.service';
 import { TimeoutReminderService } from 'src/shared/timeoutReminder/timeoutReminder.service';
+import * as moment from 'moment-timezone';
 
 @Injectable()
 export class SchedulerService {
@@ -18,6 +19,7 @@ export class SchedulerService {
     const today = new Date();
     const nextEvent = await this.prisma.events.findFirst({
       where: { start_time: { gte: today } },
+      orderBy: { start_time: 'asc' },
     });
 
     return nextEvent;
@@ -33,7 +35,6 @@ export class SchedulerService {
     const nextEvent = await this.findNextEvent();
     const today = new Date();
     if (!nextEvent) return;
-
     const milliseconds = this.dateConvertService.getMilliSecondsBetweenDates(
       today,
       nextEvent.start_time,
@@ -84,12 +85,14 @@ export class SchedulerService {
       }
 
       this.smsSenderService.sendSMS(event.users.cellphone, message);
+      console.info('SMS sent to: ', event.users.cellphone);
+      console.info('SMS message: ', message);
     }
   }
 
   async findAllEventsProgramated(date: Date) {
     const currentEvent = this.prisma.events.findMany({
-      where: { start_time: { gte: new Date(date) } },
+      where: { start_time: new Date(date) },
       include: { users: true },
     });
 

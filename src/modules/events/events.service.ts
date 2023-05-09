@@ -8,6 +8,7 @@ import { FilterEventsInput } from 'src/common/dto/events/filter-events.input';
 import { UpdatedEventObject } from 'src/common/dto/events/updated-event.object';
 import { DeletedEventObject } from 'src/common/dto/events/deleted-event.object';
 import { SchedulerService } from '../scheduler/scheduler.service';
+import { EventsEnum } from 'src/common/enum/events.enum';
 
 @Injectable()
 export class EventsService {
@@ -65,7 +66,10 @@ export class EventsService {
       data: eventPayload,
     });
 
-    await this.schedulerService.scheduleNextEvent();
+    await this.schedulerService.scheduleNextEvent(EventsEnum.START_EVENT);
+    await this.schedulerService.scheduleNextEvent(
+      EventsEnum.BEFORE_START_EVENT,
+    );
     return eventCreated;
   }
 
@@ -89,7 +93,10 @@ export class EventsService {
       };
     }
 
-    await this.schedulerService.scheduleNextEvent();
+    await this.schedulerService.scheduleNextEvent(EventsEnum.START_EVENT);
+    await this.schedulerService.scheduleNextEvent(
+      EventsEnum.BEFORE_START_EVENT,
+    );
     return {
       code: 200,
       success: true,
@@ -113,7 +120,10 @@ export class EventsService {
         message: 'No event found with the given event_id',
       };
     }
-    await this.schedulerService.scheduleNextEvent();
+    await this.schedulerService.scheduleNextEvent(EventsEnum.START_EVENT);
+    await this.schedulerService.scheduleNextEvent(
+      EventsEnum.BEFORE_START_EVENT,
+    );
     return {
       code: 200,
       success: true,

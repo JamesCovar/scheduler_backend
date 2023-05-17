@@ -45,6 +45,7 @@ type CreateEventEventObject {
   start_time: DateTime!
   end_time: DateTime!
   location: String
+  event_id: String
 }
 
 type CreatedEventObject {

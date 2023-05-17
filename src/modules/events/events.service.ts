@@ -13,11 +13,14 @@ import { CreatedEventObject } from 'src/common/dto/events/responses/created-even
 import { GetEventObject } from 'src/common/dto/events/responses/get-event.object';
 import { GetAllEventsObject } from 'src/common/dto/events/responses/getAll-events.object';
 import * as moment from 'moment-timezone';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class EventsService {
   constructor(
     private prisma: PrismaService,
+    @InjectRepository(Event) private eventRepository: Repository<Event>,
     private schedulerService: SchedulerService,
   ) {}
 
@@ -49,7 +52,7 @@ export class EventsService {
 
       whereStatement.userId = userId;
 
-      const events = await this.prisma.events.findMany({
+      const events = await this.eventRepository.find({
         skip: first * (offset - 1),
         take: first,
         where: whereStatement,
@@ -85,7 +88,7 @@ export class EventsService {
 
   async findOne(userId: string, event_id: string): Promise<GetEventObject> {
     try {
-      const event = await this.prisma.events.findFirst({
+      const event = await this.eventRepository.findOne({
         where: { event_id, userId },
       });
       if (!event)
@@ -133,14 +136,12 @@ export class EventsService {
       eventPayload.start_time = new Date(startTimeUTC);
       eventPayload.end_time = new Date(endTimeUTC);
 
-      const eventCreated = await this.prisma.events.create({
-        data: eventPayload,
-      });
+      console.log('Event programated at: ', eventPayload.start_time);
+      console.log('Server time: ', new Date());
+
+      const eventCreated = await this.eventRepository.save(eventPayload);
 
       await this.schedulerService.scheduleNextEvent(EventsEnum.START_EVENT);
-      await this.schedulerService.scheduleNextEvent(
-        EventsEnum.BEFORE_START_EVENT,
-      );
 
       return {
         code: 201,
@@ -166,16 +167,16 @@ export class EventsService {
     event_id: string,
     event: UpdateEventInput,
   ): Promise<UpdatedEventObject> {
-    const eventUpdated = await this.prisma.events.updateMany({
-      where: { event_id, userId },
-      data: { ...event },
-    });
+    const eventUpdated = await this.eventRepository.update(
+      { event_id, userId },
+      { ...event },
+    );
 
-    if (eventUpdated.count === 0) {
+    if (eventUpdated.affected === 0) {
       return {
         code: 204,
         success: false,
-        rowsAffected: eventUpdated.count,
+        rowsAffected: eventUpdated.affected,
         dataUpdated: null,
         message: 'No event found with the given event_id',
       };
@@ -188,22 +189,23 @@ export class EventsService {
     return {
       code: 200,
       success: true,
-      rowsAffected: eventUpdated.count,
+      rowsAffected: eventUpdated.affected,
       dataUpdated: event_id,
       message: 'Event updated successfully',
     };
   }
 
   async delete(userId: string, event_id: string): Promise<DeletedEventObject> {
-    const eventDeleted = await this.prisma.events.deleteMany({
-      where: { event_id, userId },
+    const eventDeleted = await this.eventRepository.delete({
+      event_id,
+      userId,
     });
 
-    if (eventDeleted.count === 0) {
+    if (eventDeleted.affected === 0) {
       return {
         code: 204,
         success: false,
-        rowsAffected: eventDeleted.count,
+        rowsAffected: eventDeleted.affected,
         dataDeleted: null,
         message: 'No event found with the given event_id',
       };
@@ -215,7 +217,7 @@ export class EventsService {
     return {
       code: 200,
       success: true,
-      rowsAffected: eventDeleted.count,
+      rowsAffected: eventDeleted.affected,
       dataDeleted: event_id,
       message: 'Event deleted succesfully',
     };

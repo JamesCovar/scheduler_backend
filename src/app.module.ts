@@ -8,9 +8,11 @@ import { GenTokenModule } from './shared/genToken/genToken.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
 import { TimeoutReminderModule } from './shared/timeoutReminder/timeoutReminder.module';
+import { DbModule } from './shared/db/db.module';
 
 @Module({
   imports: [
+    DbModule,
     GraphqlModule,
     GenTokenModule,
     AuthModule,

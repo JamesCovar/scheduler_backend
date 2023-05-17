@@ -8,9 +8,11 @@ import { UsersModule } from '../users/users.module';
 import { UsersService } from '../users/users.service';
 import { AuthResolver } from './auth.resolver';
 import { JwtStrategy } from './auth.strategy';
+import { User } from '../users/users.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-  imports: [GenTokenModule],
+  imports: [TypeOrmModule.forFeature([User]), GenTokenModule],
   providers: [
     AuthService,
     PrismaService,
@@ -19,6 +21,7 @@ import { JwtStrategy } from './auth.strategy';
     GenTokenService,
     AuthResolver,
     JwtStrategy,
+    User,
   ],
   exports: [],
 })

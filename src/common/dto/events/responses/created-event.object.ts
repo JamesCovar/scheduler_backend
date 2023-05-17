@@ -24,6 +24,9 @@ class CreateEventEventObject {
 
   @Field({ nullable: true })
   location?: string;
+
+  @Field({ nullable: true })
+  event_id: string;
 }
 
 @ObjectType()

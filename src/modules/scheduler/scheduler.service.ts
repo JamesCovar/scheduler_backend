@@ -51,21 +51,22 @@ export class SchedulerService {
       );
     }
 
-    if (notifyLaunch === EventsEnum.BEFORE_START_EVENT) {
-      const notifyBeforeStart = milliseconds - millisecondsBeforeStart;
-      if (notifyBeforeStart > 0)
-        this.timeoutReminderService.addTimeout(
-          EventsEnum.BEFORE_START_EVENT,
-          milliseconds - millisecondsBeforeStart,
-          () => {
-            this.sendSMSReminder(
-              nextEvent.start_time,
-              EventsEnum.BEFORE_START_EVENT,
-            );
-            this.scheduleNextEvent(EventsEnum.BEFORE_START_EVENT);
-          },
-        );
-    }
+    // if (notifyLaunch === EventsEnum.BEFORE_START_EVENT) {
+    //   const notifyBeforeStart = milliseconds - millisecondsBeforeStart;
+    //   console.log(notifyBeforeStart);
+    //   if (notifyBeforeStart > 0)
+    //     this.timeoutReminderService.addTimeout(
+    //       EventsEnum.BEFORE_START_EVENT,
+    //       milliseconds - millisecondsBeforeStart,
+    //       () => {
+    //         this.sendSMSReminder(
+    //           nextEvent.start_time,
+    //           EventsEnum.BEFORE_START_EVENT,
+    //         );
+    //         this.scheduleNextEvent(EventsEnum.BEFORE_START_EVENT);
+    //       },
+    //     );
+    // }
   }
 
   async sendSMSReminder(date: Date, notifyLaunch: EventsEnum) {
@@ -84,7 +85,7 @@ export class SchedulerService {
         message = `You have an event today: ${event.title} starts in ${startInMinutes} minutes`;
       }
 
-      this.smsSenderService.sendSMS(event.users.cellphone, message);
+      //this.smsSenderService.sendSMS(event.users.cellphone, message);
       console.info('SMS sent to: ', event.users.cellphone);
       console.info('SMS message: ', message);
     }

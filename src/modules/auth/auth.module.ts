@@ -10,6 +10,7 @@ import { AuthResolver } from './auth.resolver';
 import { JwtStrategy } from './auth.strategy';
 import { User } from '../users/users.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthController } from './auth.controller';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User]), GenTokenModule],
@@ -24,5 +25,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     User,
   ],
   exports: [],
+  controllers: [AuthController],
 })
 export class AuthModule {}

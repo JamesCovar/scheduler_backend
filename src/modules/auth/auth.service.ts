@@ -17,6 +17,16 @@ export class AuthService {
   async signIn(email: string, pass: string): Promise<AuthObject> {
     try {
       const user = await this.usersService.findOne(email);
+      if (!user) {
+        return {
+          code: 401,
+          message: 'Invalid credentials',
+          success: false,
+          rowsAffected: 0,
+          token: null,
+        };
+      }
+
       const isMatch = await this.hashingService.compareStringToHash(
         pass,
         user.password,

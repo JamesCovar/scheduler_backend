@@ -1,4 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
+import { IsPhoneNumber } from 'class-validator';
 import { Column, Entity } from 'typeorm';
 
 @Entity({ name: 'users' })
@@ -16,5 +17,10 @@ export class User {
   password: string;
 
   @Column()
+  @IsPhoneNumber('MX')
   cellphone: string;
+
+  @Column({ nullable: true })
+  @IsPhoneNumber('MX')
+  newCellphone: string;
 }

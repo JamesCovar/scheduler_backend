@@ -5,9 +5,11 @@ import { PrismaService } from 'src/shared/prisma/prisma.service';
 import { SchedulerModule } from '../scheduler/scheduler.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Event } from './event.entity';
+import { EventsController } from './events.controller';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Event]), SchedulerModule],
   providers: [EventsService, EventsResolver, PrismaService],
+  controllers: [EventsController],
 })
 export class EventsModule {}

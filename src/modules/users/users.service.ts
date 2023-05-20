@@ -26,20 +26,71 @@ export class UsersService {
     userId: string,
     phoneNumber: string,
   ): Promise<ChangedCellphonerResp> {
-    const user = await this.userRepository.update(
+    try {
+      const verifyCode = Math.floor(1000 + Math.random() * 9000);
+      const user = await this.userRepository.update(
+        { user_id: userId },
+        { newCellphone: phoneNumber, newCellphoneCode: verifyCode.toString() },
+      );
+
+      return {
+        code: 200,
+        message: 'Phone number changed successfully',
+        success: true,
+        rowsAffected: user.affected,
+        data: {
+          cellphone: phoneNumber,
+          userId: userId,
+          verified: false,
+        },
+      };
+    } catch (e) {
+      console.error(e);
+      return {
+        code: 500,
+        message: 'Internal server error',
+        success: false,
+        rowsAffected: 0,
+        data: null,
+      };
+    }
+  }
+
+  async verifyPhoneNumber(
+    userId: string,
+    verifyCode: string,
+  ): Promise<ChangedCellphonerResp> {
+    const user = await this.userRepository.findOne({
+      where: { user_id: userId },
+    });
+
+    if (!user || user.newCellphoneCode !== verifyCode)
+      return {
+        code: 400,
+        message: 'Invalid verification code',
+        success: false,
+        rowsAffected: 0,
+        data: null,
+      };
+
+    const updatedUser = await this.userRepository.update(
       { user_id: userId },
-      { newCellphone: phoneNumber },
+      {
+        cellphone: user.newCellphone,
+        newCellphone: null,
+        newCellphoneCode: null,
+      },
     );
 
     return {
       code: 200,
-      message: 'Phone number changed successfully',
+      message: 'Phone number verified successfully',
       success: true,
-      rowsAffected: user.affected,
+      rowsAffected: updatedUser.affected,
       data: {
-        cellphone: user.raw[0].newCellphone,
-        userId: user.raw[0].user_id,
-        verified: false,
+        cellphone: user.newCellphone,
+        userId: userId,
+        verified: true,
       },
     };
   }

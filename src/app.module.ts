@@ -9,6 +9,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { SchedulerModule } from './modules/scheduler/scheduler.module';
 import { TimeoutReminderModule } from './shared/timeoutReminder/timeoutReminder.module';
 import { DbModule } from './shared/db/db.module';
+import { EventsLogsModule } from './modules/events_logs/eventsLog.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { DbModule } from './shared/db/db.module';
     UsersModule,
     SchedulerModule,
     TimeoutReminderModule,
+    EventsLogsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

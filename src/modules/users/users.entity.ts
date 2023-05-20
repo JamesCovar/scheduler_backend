@@ -23,4 +23,10 @@ export class User {
   @Column({ nullable: true })
   @IsPhoneNumber('MX')
   newCellphone: string;
+
+  @Column({ nullable: true })
+  newCellphoneCode: string;
+
+  @Column({ default: false })
+  isPremium: boolean;
 }

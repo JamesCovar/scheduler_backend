@@ -42,7 +42,11 @@ export class AuthService {
         };
       }
 
-      const payload = { name: user.name, userId: user.user_id };
+      const payload = {
+        name: user.name,
+        userId: user.user_id,
+        isPremium: user.isPremium,
+      };
       const token = await this.genTokenService.genToken(payload);
 
       return {
@@ -81,7 +85,11 @@ export class AuthService {
 
     const userCreated = await this.usersService.create(user);
 
-    const payload = { name: userCreated.name, userId: userCreated.user_id };
+    const payload = {
+      name: userCreated.name,
+      userId: userCreated.user_id,
+      isPremium: userCreated.isPremium,
+    };
     const token = await this.genTokenService.genToken(payload);
 
     return {

@@ -5,6 +5,10 @@ import { PrismaService } from 'src/shared/prisma/prisma.service';
 import { SmsSenderService } from 'src/shared/smsSender/smsSender.service';
 import { TimeoutReminderService } from 'src/shared/timeoutReminder/timeoutReminder.service';
 import * as moment from 'moment-timezone';
+import { EventsLogService } from '../events_logs/eventsLog.service';
+import { Event } from '../events/event.entity';
+import { Equal, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class SchedulerService {
@@ -13,60 +17,21 @@ export class SchedulerService {
     private dateConvertService: DateConvertService,
     private timeoutReminderService: TimeoutReminderService,
     private smsSenderService: SmsSenderService,
+    private eventsLogsService: EventsLogService,
+    @InjectRepository(Event) private eventRepository: Repository<Event>,
   ) {}
 
-  async findNextEvent() {
-    const today = new Date();
-    const nextEvent = await this.prisma.events.findFirst({
-      where: { start_time: { gte: today } },
-      orderBy: { start_time: 'asc' },
+  async remindEvents() {
+    const events = await this.eventRepository.find({
+      where: {
+        start_time: Equal(new Date()),
+      },
     });
-
-    return nextEvent;
-  }
-
-  async scheduleNextEvent(
-    notifyLaunch: EventsEnum,
-    millisecondsBeforeStart = 600000,
-  ) {
-    const startEvent = this.timeoutReminderService.findTimeout(notifyLaunch);
-    if (startEvent) this.timeoutReminderService.deleteTimeout(notifyLaunch);
-
-    const nextEvent = await this.findNextEvent();
-    const today = new Date();
-    if (!nextEvent) return;
-    const milliseconds = this.dateConvertService.getMilliSecondsBetweenDates(
-      today,
-      nextEvent.start_time,
-    );
-
-    if (notifyLaunch === EventsEnum.START_EVENT) {
-      this.timeoutReminderService.addTimeout(
-        EventsEnum.START_EVENT,
-        milliseconds,
-        () => {
-          this.sendSMSReminder(nextEvent.start_time, EventsEnum.START_EVENT);
-          this.scheduleNextEvent(EventsEnum.START_EVENT);
-        },
-      );
+    console.log('Evento por iniciar: ', events);
+    for (const event of events) {
+      console.info('Ha comenzado un nuevo evento: ', event);
+      this.eventsLogsService.notifyEventLog(event.event_id);
     }
-
-    // if (notifyLaunch === EventsEnum.BEFORE_START_EVENT) {
-    //   const notifyBeforeStart = milliseconds - millisecondsBeforeStart;
-    //   console.log(notifyBeforeStart);
-    //   if (notifyBeforeStart > 0)
-    //     this.timeoutReminderService.addTimeout(
-    //       EventsEnum.BEFORE_START_EVENT,
-    //       milliseconds - millisecondsBeforeStart,
-    //       () => {
-    //         this.sendSMSReminder(
-    //           nextEvent.start_time,
-    //           EventsEnum.BEFORE_START_EVENT,
-    //         );
-    //         this.scheduleNextEvent(EventsEnum.BEFORE_START_EVENT);
-    //       },
-    //     );
-    // }
   }
 
   async sendSMSReminder(date: Date, notifyLaunch: EventsEnum) {

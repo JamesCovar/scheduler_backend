@@ -14,14 +14,21 @@ import { GetEventObject } from 'src/common/dto/events/responses/get-event.object
 import { GetAllEventsObject } from 'src/common/dto/events/responses/getAll-events.object';
 import * as moment from 'moment-timezone';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
+import { EventsLogs } from '../events_logs/eventsLog.entity';
+import { EventsLogService } from '../events_logs/eventsLog.service';
+import { TimeoutReminderService } from 'src/shared/timeoutReminder/timeoutReminder.service';
+import { DateConvertService } from 'src/shared/dateConvert/dateConvert.service';
 
 @Injectable()
 export class EventsService {
   constructor(
     private prisma: PrismaService,
     @InjectRepository(Event) private eventRepository: Repository<Event>,
+    private eventsLogService: EventsLogService,
     private schedulerService: SchedulerService,
+    private timeoutReminderService: TimeoutReminderService,
+    private dateConvertService: DateConvertService,
   ) {}
 
   async findAll(
@@ -125,23 +132,19 @@ export class EventsService {
   ): Promise<CreatedEventObject> {
     try {
       const eventPayload = { ...event, userId };
-      const startTimeUTC = moment
-        .tz(eventPayload.start_time, 'UTC')
-        .format('YYYY-MM-DD HH:mm:ss');
-
-      const endTimeUTC = moment
-        .tz(eventPayload.end_time, 'UTC')
-        .format('YYYY-MM-DD HH:mm:ss');
-
-      eventPayload.start_time = new Date(startTimeUTC);
-      eventPayload.end_time = new Date(endTimeUTC);
-
-      console.log('Event programated at: ', eventPayload.start_time);
-      console.log('Server time: ', new Date());
 
       const eventCreated = await this.eventRepository.save(eventPayload);
 
-      await this.schedulerService.scheduleNextEvent(EventsEnum.START_EVENT);
+      const eventLogPayload = {
+        userId: userId,
+        wasCanceled: false,
+        wasNotified: false,
+        startTime: eventCreated.start_time,
+        eventId: eventCreated.event_id,
+      };
+      await this.eventsLogService.createEventLog(eventLogPayload);
+
+      this.scheduleNextEvent();
 
       return {
         code: 201,
@@ -181,11 +184,16 @@ export class EventsService {
         message: 'No event found with the given event_id',
       };
     }
-
-    await this.schedulerService.scheduleNextEvent(EventsEnum.START_EVENT);
-    await this.schedulerService.scheduleNextEvent(
-      EventsEnum.BEFORE_START_EVENT,
+    const eventLogPayload = {
+      notificationSendAt: event.start_time,
+    };
+    await this.eventsLogService.updateEventLog(
+      userId,
+      event_id,
+      eventLogPayload,
     );
+
+    this.scheduleNextEvent();
     return {
       code: 200,
       success: true,
@@ -210,10 +218,9 @@ export class EventsService {
         message: 'No event found with the given event_id',
       };
     }
-    await this.schedulerService.scheduleNextEvent(EventsEnum.START_EVENT);
-    await this.schedulerService.scheduleNextEvent(
-      EventsEnum.BEFORE_START_EVENT,
-    );
+
+    await this.eventsLogService.cancelEventLog(userId, event_id);
+    this.scheduleNextEvent();
     return {
       code: 200,
       success: true,
@@ -221,5 +228,44 @@ export class EventsService {
       dataDeleted: event_id,
       message: 'Event deleted succesfully',
     };
+  }
+
+  async scheduleNextEvent() {
+    const events = await this.findNextEvent();
+    if (!events)
+      return {
+        status: null,
+        message: 'No events found',
+      };
+    console.log(events.event_id, ' ', events.start_time);
+    const miliseconds = this.dateConvertService.getMilliSecondsBetweenDates(
+      new Date(),
+      events.start_time,
+    );
+
+    const alreadyEventProgramated = this.timeoutReminderService.findTimeout(
+      EventsEnum.START_EVENT,
+    );
+    if (alreadyEventProgramated)
+      this.timeoutReminderService.deleteTimeout(EventsEnum.START_EVENT);
+
+    this.timeoutReminderService.addTimeout(
+      EventsEnum.START_EVENT,
+      miliseconds,
+      () => {
+        this.schedulerService.remindEvents();
+        this.scheduleNextEvent();
+      },
+    );
+  }
+
+  async findNextEvent() {
+    const today = new Date();
+    console.log('TODAY: ', today);
+    const nextEvent = await this.eventRepository.findOne({
+      where: { start_time: MoreThan(today) },
+      order: { start_time: 'ASC' },
+    });
+    return nextEvent;
   }
 }

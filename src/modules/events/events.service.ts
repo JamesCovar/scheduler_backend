@@ -253,7 +253,7 @@ export class EventsService {
       EventsEnum.START_EVENT,
       miliseconds,
       () => {
-        this.schedulerService.remindEvents();
+        this.schedulerService.remindEvents(events.start_time);
         this.scheduleNextEvent();
       },
     );

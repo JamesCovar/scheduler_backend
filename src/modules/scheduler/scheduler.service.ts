@@ -21,10 +21,10 @@ export class SchedulerService {
     @InjectRepository(Event) private eventRepository: Repository<Event>,
   ) {}
 
-  async remindEvents() {
+  async remindEvents(eventTime: Date) {
     const events = await this.eventRepository.find({
       where: {
-        start_time: Equal(new Date()),
+        start_time: Equal(eventTime),
       },
     });
     console.log('Evento por iniciar: ', events);
